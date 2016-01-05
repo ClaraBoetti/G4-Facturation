@@ -36,13 +36,16 @@ def formatage_url(adresse):
 
 #fonction permettant de formater l'url et de calculer les distances
 def distance(depart, arrivee):
-    base = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
-    origine = 'origins=' + formatage_url(depart)
-    destination = '&destinations=' + formatage_url(arrivee)
-    fin = '&mode=driving&language=fr-FR&key=AIzaSyCQnaoaMu6GVo3AwRzN62l0onao2TPN_u0'
-    url = base + origine + destination + fin
-    reponse = query_API(url)
-    return json.loads(reponse)
+    if len(depart)<3 or len(arrivee)<3:
+        return None
+    else:    
+        base = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
+        origine = 'origins=' + formatage_url(depart)
+        destination = '&destinations=' + formatage_url(arrivee)
+        fin = '&mode=driving&language=fr-FR&key=AIzaSyCQnaoaMu6GVo3AwRzN62l0onao2TPN_u0'
+        url = base + origine + destination + fin
+        reponse = query_API(url)
+        return json.loads(reponse)       
 
 #Fonction permettant de récupérer la distance
 def recup_distance(json):
@@ -57,7 +60,7 @@ def recup_heure(json):
     return resultat
 
 #Tests
-a = distance('Toulouse','Paris')
-print(recup_distance(a))
-print(recup_heure(a))
+#a = distance('Toulouse','Paris')
+#print(recup_distance(a))
+#print(recup_heure(a))
     
