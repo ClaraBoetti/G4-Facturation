@@ -11,7 +11,7 @@ def tarifPlus(debut):
     #initialisation du booléen
     test=False
     #on concaténe le mois et le jour de façon a avoir une chaine de la forme 'jour/mois'  
-    datef=str(date.day)+'/'+str(date.month)
+    datef=str(debut.day)+'/'+str(debut.month)
     #on vérifie si la date en entrée est un jour ferie
     ferie=datef  in ['1/1','1/5','8/5','14/7','15/8','1/11','11/11','25/12']
     #on vérifie si la date en entrée est un dimanche
