@@ -58,7 +58,11 @@ def tarifs(demande):
     arrive = demande['numero_arr'] + ' ' + demande['adresse_arr'] + ' ' + demande['cp_arr'] + ' ' + demande['ville_arr']       
 
     #On calcule le prix total
-    prixTotal = float(prise_en_charge['Prix']) + prix * cd.recup_distance(cd.distance(depart,arrive)) + supplement
+    if demande['A-R'] == 'True':
+        prixTotal = float(prise_en_charge['Prix']) + prix *( cd.recup_distance(cd.distance(depart,arrive)) + cd.recup_distance(cd.distance(arrive,depart)) ) + supplement
+    else:
+        prixTotal = float(prise_en_charge['Prix']) + prix * cd.recup_distance(cd.distance(depart,arrive)) + supplement
+
     
     #On vérifie que le prix total soit supérieur au prix minimal
     prixMinimal = float(supp[supp['Supplements'] == 'Tarif_minimum']['Prix'])
@@ -66,160 +70,49 @@ def tarifs(demande):
     if prixTotal < prixMinimal:
         prixTotal = prixMinimal
     
-    #On retourne le prix total
-    if demande['aeroport'] == 'True':       
-        if demande['gare']== 'True':
-            if int(demande['nb_passagers']) > 4:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)), 
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(demande['bagage']),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : str(float(Gar['Prix'])),
-                    'Nombres_personnes_sup' : str(float(demande['nb_passagers']) - 4 ),
-                    'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
-                    'Prix_personnes_sup' : str((float(demande['nb_passagers'])-4) * float(PerS['Prix'])),
-                    'Aeroport' : str(demande['aeroport']),
-                    'Prix_Aeroport':str(float(Aer['Prix']))
-                    }
-            else:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)), 
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : str(float(Gar['Prix'])),
-                    'Nombres_personnes_sup' : 0,
-                    'Prix_par_personnes_sup' : 0,
-                    'Prix_personnes_sup' : 0,
-                    'Aeroport' : str(demande['aeroport']),
-                    'Prix_Aeroport':str(float(Aer['Prix']))
-                    }
-        else:
-            if int(demande['nb_passagers']) > 4:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)),
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : 0,
-                    'Nombres_personnes_sup' : str(float(demande['nb_passagers']) - 4 ),
-                    'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
-                    'Prix_personnes_sup' : str((float(demande['nb_passagers'])-4) * float(PerS['Prix'])),
-                    'Aeroport':str(demande['aeroport']),
-                    'Prix_Aeroport':str(float(Aer['Prix']))                    
-                    }
-            else:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)),
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : 0,
-                    'Nombres_personnes_sup' : 0,
-                    'Prix_par_personnes_sup' : 0,
-                    'Prix_personnes_sup' : 0,
-                    'Aeroport':str(demande['aeroport']),
-                    'Prix_Aeroport':str(float(Aer['Prix']))
-                 } 
+#On retourne le prix total via un dictionnaire de données
+#Gestion des conditions
+
+    #Si le client est pris à l'aéroport
+    if demande['aeroport'] == 'True':   
+        prixA = float(Aer['Prix'])
     else:
-        if demande['gare']== 'True':
-            if int(demande['nb_passagers']) > 4:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)), 
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(demande['bagage']),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : str(float(Gar['Prix'])),
-                    'Nombres_personnes_sup' : str(float(demande['nb_passagers']) - 4 ),
-                    'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
-                    'Prix_personnes_sup' : str((float(demande['nb_passagers'])-4) * float(PerS['Prix'])),
-                    'Aeroport' : str(demande['aeroport']),
-                    'Prix_Aeroport':0
-                    }
-            else:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)), 
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : str(float(Gar['Prix'])),
-                    'Nombres_personnes_sup' : 0,
-                    'Prix_par_personnes_sup' : 0,
-                    'Prix_personnes_sup' : 0,
-                    'Aeroport' : str(demande['aeroport']),
-                    'Prix_Aeroport':0
-                    }
-        else:
-            if int(demande['nb_passagers']) > 4:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)),
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : 0,
-                    'Nombres_personnes_sup' : str(float(demande['nb_passagers']) - 4 ),
-                    'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
-                    'Prix_personnes_sup' : str((float(demande['nb_passagers'])-4) * float(PerS['Prix'])),
-                    'Aeroport':str(demande['aeroport']),
-                    'Prix_Aeroport':0                   
-                    }
-            else:
-                a = {
-                    'Prix_Total' : str(round(prixTotal,2)),
-                    'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
-                    'Nombre_bagage' : str(float(demande['bagage'])),
-                    'Prix_1_bagage' : str(float(bag['Prix'])),
-                    'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
-                    'animal' : str(demande['animaux']),
-                    'prix_animal' : str(float(an['Prix'])),
-                    'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
-                    'Gare' : str(demande['gare']),
-                    'Prix_Gare' : 0,
-                    'Nombres_personnes_sup' : 0,
-                    'Prix_par_personnes_sup' : 0,
-                    'Prix_personnes_sup' : 0,
-                    'Aeroport':str(demande['aeroport']),
-                    'Prix_Aeroport':0
-                 } 
-    
+        prixA = 0
+        
+    #Si le nombre de personne est supérieur à 4
+    if int(demande['nb_passagers']) > 4:
+        nbPersonnes =  float(demande['nb_passagers']) - 4
+    else:
+        nbPersonnes = 0
+   
+     #Si le client est pris à la gare
+    if demande['gare'] == 'True':
+        prixG = float(Gar['Prix'])
+    else:
+        prixG = 0
+                
+
+    dico = {
+                'Prix_Total' : str(round(prixTotal,2)), 
+                'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
+                'Nombre_bagage' : str(demande['bagage']),
+                'Prix_1_bagage' : str(float(bag['Prix'])),
+                'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
+                'animal' : str(demande['animaux']),
+                'prix_animal' : str(float(an['Prix'])),
+                'prix_total_animal' : str(float(demande['animaux']) * float(an['Prix'])),
+                'Gare' : str(demande['gare']),
+                'Prix_Gare' : str(prixG),
+                'Nombres_personnes_sup' : nbPersonnes,
+                'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
+                'Prix_personnes_sup' : str((nbPersonnes) * float(PerS['Prix'])),
+                'Aeroport' : str(demande['aeroport']),
+                'Prix_Aeroport':str(prixA)
+                }
+
     #On retourne le prix total
-    return a
+    return dico    
     
+
 #print("Votre itinéraire devrait vous coûter " + str(calcul_tarifs(tt.demande)) + "€")
 
