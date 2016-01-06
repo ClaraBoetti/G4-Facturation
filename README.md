@@ -1,21 +1,32 @@
-# Groupe 4 - Facturation
+# Production
 
+Ce dossier contient l'application finale, celle qui doit marcher sans faille.
 
-## Objectifs
+## Architecture
 
-- Lors de la réservation d’un taxi par un client sur le site web, un devis est édité automatiquement pour que le client connaisse le montant de la course. Ce devis s’appuira sur les différentes informations saisies par l’utilisateur (lieu de départ, lieu d’arrivée, nombre de personnes, heure, …).
-- Ce devis pourra également réfléchir à l’ajustement du montant de la course en fonction des différences entre les montants prévus et les montants payés. Une fourchette de prix plutôt qu’un prix précis peut être justifiée.
-- Il faudra aussi générer des factures qui iront s'insérer dans le logiciel de comptabilité du client.
+A faire.
 
-Ce groupe sera en étroite collaboration avec le groupe 5 puisque c'est celui qui récupère les données rentrées dans les formulaires.
+## Utilisation
 
+Il faut d'abord s'assurer que les valeurs dans ``config.py`` soient cohérentes, c'est à dire bien faire en sorte que le port et le mot de passe de PostgreSQL soient les mêmes que ceux de l'ordinateur d'où l'application est lancée. Si la base de données a déjà été créée elle peut être supprimée en lancant le script ``suppression.py``.
 
-## Livrables
+```sh
+# Installer les librairies
+pip install -r requirements.txt
+# Créer la base de données
+python creation.py
+# Insérer les données de départ
+python insertions.py
+# Lancer le site web
+python run.py
+```
 
-- Un rapport expliquant les différents choix faits lors de l’édition du devis.
-- Du code pour générer une facture.
+Ensuite il suffit de consulter l'URL ``localhost:5000`` dans le navigateur.
 
+## Partage du localhost
 
-## Travail
+Il faut utiliser l'utilitaire ``ngrok`` qui est inclu dans le dossier. Commencez par taper ``python run.py`` dans une console. Ensuite ouvrez une nouvelle console puis tapez ``./ngrok http 5000``, ``ngrok`` vous informe alors de l'URL à laquelle le localhost est disponible.
 
-- [Se familiariser avec Python](https://github.com/TaxiSID/Documentation/wiki/Introduction-au-langage-Python)
+## Déploiement sur un serveur
+
+Se référer au dossier ``setup/``.
