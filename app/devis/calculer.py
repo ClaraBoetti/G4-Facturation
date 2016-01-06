@@ -1,7 +1,7 @@
 import pandas as pd
 import app.devis.calcul_distance as cd
 import app.devis.tarif as tt
-
+from datetime import datetime
 
 
 def heures_tariff(demande):
@@ -29,9 +29,35 @@ def tarifs(demande):
     #On initialise les prix de départ et les suppléments
     prise_en_charge = supp[supp['Supplements'] == 'Prise_en_charge']
     
-    #On prend les lignes selon les types de tarifs et on en tire le prix associé
-    ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)]
-    prix = float(ligne['tarif_par_km'])
+        #On récupère la date et l'heure de départ
+    date = demande['date_debut'].split('-')
+    annee = int(date[0])
+    mois = int(date[1])
+    jour = int(date[2])
+    heure = int(demande['heures'])
+    minutes = int(demande['minutes'])
+    
+    #Mise en forme de la date
+    date = datetime(
+        annee,
+        mois,
+        jour,
+        heure,
+        minutes
+    )
+
+ #On prend les lignes selon les types de tarifs et on en tire le prix associé
+    if tt.type_tarif(demande)[1] == [0,1] or tt.type_tarif(demande)[1] == [1,0]:
+        #tout le trajet en jour ou en nuit
+        ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[0]]
+        prix = float(ligne['tarif_par_km'])
+    else:
+        #trajet en partie en jour et en nuit
+        ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][0]]#tarif nuit
+        ligne2 = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][1]]#tarif jour
+        prix = float(ligne['tarif_par_km']) * tt.type_tarif(demande)[1][0] + float(ligne2['tarif_par_km']) * tt.type_tarif(demande)[1][1] #avec pourcentage de jour et de nuit
+    
+   
     
     #On calcule les suppléments
     #On récupère les lignes selon les suppléments et leurs prix
@@ -95,6 +121,8 @@ def tarifs(demande):
     dico = {
                 'Prix_Total' : str(round(prixTotal,2)), 
                 'Prise_en_charge' : str(float(prise_en_charge['Prix'])),
+                'Prix_par_km' : prix,
+                'Nombre_km' : cd.recup_distance(cd.distance(depart,arrive)),
                 'Nombre_bagage' : str(demande['bagage']),
                 'Prix_1_bagage' : str(float(bag['Prix'])),
                 'prix_total_bagage' : str(float(demande['bagage']) * float(bag['Prix'])),
