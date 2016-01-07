@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from app.devis import calcul_distance as cd
+import app.outils.geographie as geo
+from app.calcul.distance import Parcours as Par
 
 #On cherche à retourner le type de tarif (Jour ou Nuit/Dimanche/JoursFériés)
 def type_tarif(demande):
@@ -21,9 +22,9 @@ def type_tarif(demande):
 
     #Recherche du tarif: Jour ou Nuit/JourFerie/Dimanche    
     #On calcule la date d'arrivée estimée du trajet
-    temps_trajet = timedelta(minutes=cd.recup_heure(cd.distance(depart,arrive)))
+    temps_trajet = timedelta(minutes=Par(geo.geocoder(depart),geo.geocoder(arrive),str(date)).temps)
     date_arrive = date + temps_trajet
- 
+
     #On définit les limites de passages aux horaires jour et nuit
     date_lim_jour = datetime.strptime(str(annee_depart) + '-' + str(mois_depart) + '-' + str(jour_depart) + ' 08:00:00', '%Y-%m-%d %H:%M:%S')
     date_lim_soir = datetime.strptime(str(annee_depart) + '-' + str(mois_depart) + '-' + str(jour_depart) + ' 19:00:00', '%Y-%m-%d %H:%M:%S')
@@ -44,6 +45,7 @@ def type_tarif(demande):
         #Si le trajet est seulement de nuit
         else:
             intervalle = [1,0]
+            Type_tarif = 'TarifD'
     #Si le départ est avant 19h
     elif date < date_lim_soir:
         #Si l'arrivée est après 19h et avant 8h le lendemain
@@ -59,6 +61,7 @@ def type_tarif(demande):
         #Si le trajet est seulement de jour
         elif date_arrive < date_lim_soir: 
             intervalle = [0,1]
+            Type_tarif = 'TarifC'
     #Si le départ est après 19h
     elif date >= date_lim_soir:
         #Si l'arrivée est entre 8h et 19h le lendemain
@@ -74,6 +77,7 @@ def type_tarif(demande):
         #Si le trajet est seulement de nuit
         else:
             intervalle = [1,0]
+            Type_tarif = 'TarifD'
    
  
     #On concaténe le mois et le jour de façon a avoir une chaine de la forme 'jour/mois'  
@@ -89,24 +93,18 @@ def type_tarif(demande):
         '1/11',
         '11/11',
         '25/12'
-    ]+feries(date.year)
-    
-    #print(ferie)    
+    ]+feries(date.year)    
     
     #On vérifie si le jour est un dimanche
     dimanche = date.weekday()
    
     if ferie == True or dimanche == 6:
-        intervalle = [1,0]  
-
-#Test tarif spécial (Nuit/JourFérié/Dimanche)
-    if date.hour >= 19 and date.hour < 8 or ferie or dimanche == 6:
+        intervalle = [1,0]
         Type_tarif = 'TarifD'
-#Tarif de jour par défaut 
-    else:
-        Type_tarif = 'TarifC'
+        
   #Initialise les tarifs à utiliser en cas de changement de tarifs en cours de trajet           
     double_tarif = ['TarifD','TarifC']
+    
     return Type_tarif, intervalle, double_tarif
 
 def feries(an):
