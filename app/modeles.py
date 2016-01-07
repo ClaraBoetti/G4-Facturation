@@ -33,6 +33,7 @@ class Utilisateur(db.Model, UserMixin):
         self._mdp = bcrypt.generate_password_hash(plaintext)
 
     def check_password(self, plaintext):
+        # A changer, problème d'UTF-8 avec PostgreSQL
         return True
         return bcrypt.check_password_hash(self.mdp, plaintext)
 
@@ -104,14 +105,15 @@ class Conducteur(db.Model):
     fax = db.Column(db.Integer)
     prenom = db.Column(db.String)
     nom = db.Column(db.String)
-    libre = db.Column(db.Boolean)
+    statut = db.Column(db.String)
     station = db.Column(db.String, db.ForeignKey('stations.nom'))
+    station_entree = db.Column(db.DateTime)
     position = db.Column(Geometry('POINT'))
     adresse = db.Column(db.Integer, db.ForeignKey('adresses.identifiant'))
     inscription = db.Column(db.DateTime)
 
 
-class Penalites(db.Model):
+class Penalite(db.Model):
 
     ''' Une pénalité infligée à un conducteur. '''
 
@@ -127,7 +129,7 @@ class Penalites(db.Model):
     )
 
 
-class Messages(db.Model):
+class Message(db.Model):
 
     ''' Un message envoyé à un conducteur. '''
 
@@ -142,7 +144,7 @@ class Messages(db.Model):
     )
 
 
-class Positions(db.Model):
+class Position(db.Model):
 
     ''' Une position d'un conducteur à un moment donné. '''
 
@@ -211,6 +213,7 @@ class Adresse(db.Model):
     cp = db.Column(db.Integer)
     ville = db.Column(db.String)
     position = db.Column(Geometry('POINT'))
+    secteur = db.Column(db.String, db.ForeignKey('secteurs.nom'))
 
 
 class Station(db.Model):
@@ -221,8 +224,13 @@ class Station(db.Model):
 
     nom = db.Column(db.String, primary_key=True)
     adresse = db.Column(db.Integer, db.ForeignKey('adresses.identifiant'))
-    distance = db.Column(db.Float, db.CheckConstraint('0 <= distance'))
-    secteur = db.Column(db.String, db.ForeignKey('secteurs.nom'))
+    distance_entree = db.Column(db.Float, db.CheckConstraint('0 <= distance_entree'))
+    distance_sortie = db.Column(db.Float, db.CheckConstraint('0 <= distance_sortie'))
+
+    __table_args__ = (
+        db.CheckConstraint('distance_entree < distance_sortie',
+                           name='entree_inf_sortie_check'),
+    )
 
 
 class Secteur(db.Model):
@@ -255,6 +263,7 @@ class Course(db.Model):
     bagages = db.Column(db.Integer)
     animaux = db.Column(db.Integer)
     gare = db.Column(db.Boolean)
+    aeroport = db.Column(db.Boolean)
     depart = db.Column(db.Integer, db.ForeignKey('adresses.identifiant'))
     arrivee = db.Column(db.Integer, db.ForeignKey('adresses.identifiant'))
 
@@ -292,6 +301,7 @@ class Proposition(db.Model):
     statut = db.Column(db.String)
     raison = db.Column(db.String)
     ordre = db.Column(db.Integer)
+    meme_station = db.Column(db.Boolean)
 
     __table_args__ = (
         db.PrimaryKeyConstraint('iteration', 'course', 'conducteur', name='pk_proposition'),

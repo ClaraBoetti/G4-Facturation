@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import app.devis.calcul_distance as cd
+from app.devis import calcul_distance as cd
 
 #On cherche à retourner le type de tarif (Jour ou Nuit/Dimanche/JoursFériés)
 def type_tarif(demande):
@@ -23,7 +23,7 @@ def type_tarif(demande):
     #On calcule la date d'arrivée estimée du trajet
     temps_trajet = timedelta(minutes=cd.recup_heure(cd.distance(depart,arrive)))
     date_arrive = date + temps_trajet
-
+ 
     #On définit les limites de passages aux horaires jour et nuit
     date_lim_jour = datetime.strptime(str(annee_depart) + '-' + str(mois_depart) + '-' + str(jour_depart) + ' 08:00:00', '%Y-%m-%d %H:%M:%S')
     date_lim_soir = datetime.strptime(str(annee_depart) + '-' + str(mois_depart) + '-' + str(jour_depart) + ' 19:00:00', '%Y-%m-%d %H:%M:%S')
@@ -98,29 +98,15 @@ def type_tarif(demande):
    
     if ferie == True or dimanche == 6:
         intervalle = [1,0]  
-        
-    #Choix du tarif avec prise en compte des aller retours
-    #Si trajet Aller retour
-    if demande['A-R'] == 'True':
-    #Test tarif spécial (Nuit/JourFérié/Dimanche)
-        if date.hour >= 19 and date.hour < 8 or ferie or dimanche == 6:
-            Type_tarif = 'TarifB'
-    #Tarif de jour par défaut 
-        else:
-            Type_tarif = 'TarifA'
-    #Si trajet simple
+
+#Test tarif spécial (Nuit/JourFérié/Dimanche)
+    if date.hour >= 19 and date.hour < 8 or ferie or dimanche == 6:
+        Type_tarif = 'TarifD'
+#Tarif de jour par défaut 
     else:
-    #Test tarif spécial (Nuit/JourFérié/Dimanche)
-        if date.hour >= 19 and date.hour < 8 or ferie or dimanche == 6:
-            Type_tarif = 'TarifD'
-    #Tarif de jour par défaut 
-        else:
-            Type_tarif = 'TarifC'
+        Type_tarif = 'TarifC'
   #Initialise les tarifs à utiliser en cas de changement de tarifs en cours de trajet           
-    if demande['A-R'] == 'True':
-        double_tarif = ['TarifB','TarifA']
-    else:
-        double_tarif = ['TarifD','TarifC']
+    double_tarif = ['TarifD','TarifC']
     return Type_tarif, intervalle, double_tarif
 
 def feries(an):

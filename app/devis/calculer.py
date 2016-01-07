@@ -1,35 +1,17 @@
 import pandas as pd
-import app.devis.calcul_distance as cd
-import app.devis.tarif as tt
+from app.devis import calcul_distance as cd
+from app.devis import tarif as tt
 from datetime import datetime
-
-
-def heures_tariff(demande):
-    categorie=demande['categorie']
-    if categorie=='particulier':
-       
-      return  pd.read_csv('app/devis/data/tarifs.csv', encoding='utf8')
-    else: 
-        
-      return pd.read_csv('app/devis/data/tarifs-pro.csv', encoding='utf8')
-      
-def suppf(demande):
-    categorie=demande['categorie']
-    if categorie=='particulier':       
-      return  pd.read_csv('app/devis/data/supplements.csv', encoding='utf8')
-    else:         
-      return pd.read_csv('app/devis/data/supplements-pro.csv', encoding='utf8')
-
 
 def tarifs(demande):
     
-    supp=suppf(demande)
-    heures_tarif =heures_tariff(demande)
+    supp = pd.read_csv('app/devis/data/supplements.csv', encoding='utf8')
+    heures_tarif = pd.read_csv('app/devis/data/tarifs.csv', encoding='utf8')
 
     #On initialise les prix de départ et les suppléments
     prise_en_charge = supp[supp['Supplements'] == 'Prise_en_charge']
     
-        #On récupère la date et l'heure de départ
+    #On récupère la date et l'heure de départ
     date = demande['date_debut'].split('-')
     annee = int(date[0])
     mois = int(date[1])
@@ -48,18 +30,19 @@ def tarifs(demande):
 
  #On prend les lignes selon les types de tarifs et on en tire le prix associé
     if tt.type_tarif(demande)[1] == [0,1] or tt.type_tarif(demande)[1] == [1,0]:
-        #tout le trajet en jour ou en nuit
+        #Tout le trajet en jour ou en nuit
         ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[0]]
         prix = float(ligne['tarif_par_km'])
     else:
-        #trajet en partie en jour et en nuit
-        ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][0]]#tarif nuit
-        ligne2 = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][1]]#tarif jour
-        prix = float(ligne['tarif_par_km']) * tt.type_tarif(demande)[1][0] + float(ligne2['tarif_par_km']) * tt.type_tarif(demande)[1][1] #avec pourcentage de jour et de nuit
+        #Trajet en partie en jour et en nuit
+        #Calcul du tarif de nuit
+        ligne = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][0]]
+        #Calcul du tarif de jour
+        ligne2 = heures_tarif[heures_tarif['Type_Tarif'] == tt.type_tarif(demande)[2][1]]
+        #Calcul du prix/km par pourcentage du temps passé en tarif jour et nuit
+        prix = float(ligne['tarif_par_km']) * tt.type_tarif(demande)[1][0] + float(ligne2['tarif_par_km']) * tt.type_tarif(demande)[1][1]
     
-   
-    
-    #On calcule les suppléments
+    #Calcul des suppléments
     #On récupère les lignes selon les suppléments et leurs prix
     an= supp[supp['Supplements'] == 'Animal']
     bag = supp[supp['Supplements'] == 'Bagage']
@@ -67,28 +50,27 @@ def tarifs(demande):
     Gar = supp[supp['Supplements'] == 'Gare']
     Aer = supp[supp['Supplements'] == 'Aeroport']
     
-    #On calcule les suppléments
+    #Calcul du montant total des suppléments
+    #Suppléments pour bagages et/ou animaux
     supplement = float(demande['bagage']) * float(bag['Prix']) + float(demande['animaux']) * 1
     
+    #Suppléments pour un passager supplémentaire
     if int(demande['nb_passagers']) > 4:
         supplement += (float(demande['nb_passagers'])-4) * float(PerS['Prix'])
     
+    #Suppléments pour la prise en charge à la gare
     if demande['gare'] == 'True':
         supplement += float(Gar['Prix'])
-		
+        
+    #Suppléments pour la prise en chage à l'aéroport
     if demande['aeroport'] == 'True':
         supplement += float(Aer['Prix'])
 
-    #On concatenne les adresses de départ et d'arrivée
+    #On concaténe les adresses de départ et d'arrivée
     depart = demande['numero_dep'] + ' ' + demande['adresse_dep'] + ' ' + demande['cp_dep'] + ' ' + demande['ville_dep']
     arrive = demande['numero_arr'] + ' ' + demande['adresse_arr'] + ' ' + demande['cp_arr'] + ' ' + demande['ville_arr']       
 
-    #On calcule le prix total
-    if demande['A-R'] == 'True':
-        prixTotal = float(prise_en_charge['Prix']) + prix *( cd.recup_distance(cd.distance(depart,arrive)) + cd.recup_distance(cd.distance(arrive,depart)) ) + supplement
-    else:
-        prixTotal = float(prise_en_charge['Prix']) + prix * cd.recup_distance(cd.distance(depart,arrive)) + supplement
-
+    prixTotal = float(prise_en_charge['Prix']) + prix * cd.recup_distance(cd.distance(depart,arrive)) + supplement
     
     #On vérifie que le prix total soit supérieur au prix minimal
     prixMinimal = float(supp[supp['Supplements'] == 'Tarif_minimum']['Prix'])
@@ -116,7 +98,7 @@ def tarifs(demande):
         prixG = float(Gar['Prix'])
     else:
         prixG = 0
-                
+
 
     dico = {
                 'Prix_Total' : str(round(prixTotal,2)), 
@@ -139,8 +121,4 @@ def tarifs(demande):
                 }
 
     #On retourne le prix total
-    return dico    
-    
-
-#print("Votre itinéraire devrait vous coûter " + str(calcul_tarifs(tt.demande)) + "€")
-
+    return dico

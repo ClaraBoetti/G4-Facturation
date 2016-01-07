@@ -1,5 +1,5 @@
-Type_Tarif,tarif_par_km,description
-TarifA,0.81,"Tarif aller/retour de jour (8h à 19h, du lundi au samedi)"
-TarifB,1.13,"Tarif aller/retour de nuit (19h à 8h du lundi au samedi, les dimanches et jours fériés)"
-TarifC,1.62,"Tarif de jour (8h à 19h, du lundi au samedi)"
-TarifD,2.24,"Tarif de nuit (19h à 8h du lundi au samedi, les dimanches et jours fériés)"
+Type_Tarif,tarif_par_km
+TarifA,0.81
+TarifB,1.13
+TarifC,1.62
+TarifD,2.24
