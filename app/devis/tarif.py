@@ -105,7 +105,16 @@ def type_tarif(demande):
   #Initialise les tarifs à utiliser en cas de changement de tarifs en cours de trajet           
     double_tarif = ['TarifD','TarifC']
     
-    return Type_tarif, intervalle, double_tarif
+    
+    return Type_tarif, intervalle, double_tarif,temps_trajet
+    
+    
+    
+    
+    
+    
+    
+    
 
 def feries(an):
     #on calcule les dates des jours fériés variables selon les années (lundi de paques, lundi de pentecote et jeudi de l'ascension)

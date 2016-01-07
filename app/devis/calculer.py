@@ -101,8 +101,7 @@ def tarifs(demande):
     if demande['gare'] == 'True':
         prixG = float(Gar['Prix'])
     else:
-        prixG = 0
-                
+        prixG = 0    
 
     dico = {
                 'Prix_Total' : str(round(prixTotal,2)), 
@@ -121,7 +120,8 @@ def tarifs(demande):
                 'Prix_par_personnes_sup' : str(float(PerS['Prix'])),
                 'Prix_personnes_sup' : str((nbPersonnes) * float(PerS['Prix'])),
                 'Aeroport' : str(demande['aeroport']),
-                'Prix_Aeroport':str(prixA)
+                'Prix_Aeroport':str(prixA),
+                'Temps_course':str(tt.type_tarif(demande)[3])
                 }
 
     #On retourne le prix total
