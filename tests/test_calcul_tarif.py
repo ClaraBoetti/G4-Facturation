@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from app.devis import calculer as ct
 #Moins de 7€, tarif normal, sans supplément
-def test_machin():
-#### PARTICULIER
+def test_tarifs():
+#### Cette fonction doit retourner le dictionnaire de donnée donnant le prix total de la course, ainsi que le détail du devis
+### Nous aurons alors le montant du supplément par unité, le nombre de supplément, ainsi que le montant total du supplément appliqué au prix total
+### Les types de suppléments sont les bagages, les animaux, le nombre de passager supérieur à 4, ainsi que la prise en charge ou non à la gare et/ou l'aéroport
     demande = {
          'minutes': '40',
          'commentaire': '',
